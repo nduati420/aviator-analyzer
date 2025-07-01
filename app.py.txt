@@ -1,0 +1,39 @@
+import streamlit as st
+import pandas as pd
+
+def analyze_trends(df):
+    recent = df["Crash Multiplier"].tail(10)
+    avg = recent.mean()
+    low_streak = (recent < 2).sum()
+    high_count = (recent > 10).sum()
+
+    if low_streak >= 4:
+        prediction = "⚠️ Low streak detected. Possible high multiplier coming soon."
+        risk = "LOW"
+    elif avg > 5:
+        prediction = "🔥 High average detected. Proceed with caution."
+        risk = "MEDIUM"
+    elif high_count >= 2:
+        prediction = "📈 Multiple high crashes. Watch for drop."
+        risk = "HIGH"
+    else:
+        prediction = "🔄 Normal pattern. No strong signals."
+        risk = "MEDIUM"
+
+    return avg, low_streak, high_count, risk, prediction
+
+st.title("✈️ Aviator Analyzer + Prediction 🔮")
+uploaded_file = st.file_uploader("Upload your Aviator CSV file", type="csv")
+
+if uploaded_file:
+    df = pd.read_csv(uploaded_file)
+    st.subheader("📊 Crash History")
+    st.line_chart(df["Crash Multiplier"])
+
+    st.subheader("🔮 Prediction Summary")
+    avg, low_streak, high_count, risk, prediction = analyze_trends(df)
+    st.write(f"**Recent Avg:** {round(avg, 2)}x")
+    st.write(f"**Low Crashes (<2x):** {low_streak}")
+    st.write(f"**High Crashes (>10x):** {high_count}")
+    st.write(f"**Risk Level:** {risk}")
+    st.success(prediction)
